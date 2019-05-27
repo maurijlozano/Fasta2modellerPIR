@@ -1,5 +1,5 @@
 # Fasta2modellerPIR
-Script to convert 2 sequences fasta alignment to modeller PIR
+Script to convert an alignment of only 2 sequences from fasta to modeller PIR format.
 
 For usage run:
 ```
@@ -22,3 +22,5 @@ Converts fasta alignment to modeller PIR file. Only for One chain which must be 
 -s sequence iD, must be the name of the sequence to model, as it is on the alingment fasta file.
 
 
+## For alignments copied from FFas, additional care should be taken.
+As an example, for 4n81 alingment with SMc04042, the c terminal residue of 4n81 was not aligned. All the protein residues must be in the alingment for the script to work.
