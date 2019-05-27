@@ -7,7 +7,7 @@ SEQ=""
 show_help()
 {
 echo "
-        Usage: cCvsE.sh [-a] [-p] [-c] [-s]
+        Usage: fasta2modellerPIR.sh [-a] [-p] [-c] [-s]
         
         -h Show this Help
         -a fasta alignment file
@@ -16,7 +16,7 @@ echo "
         -c chain
 "
 
-echo -e '\nConverts fasta alignment to modeller PIR file. Only for One chain which must be specified.\n\n'
+echo -e '\nConverts fasta alignment to a modeller PIR file. Only for One chain which must be specified.\n\n'
 
 exit 1
 }
