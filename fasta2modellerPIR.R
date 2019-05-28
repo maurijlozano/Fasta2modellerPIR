@@ -28,7 +28,10 @@ if (pdbinfo[3] > min(arts)){start = min(arts)} else{start =as.numeric(pdbinfo[3]
 if (pdbinfo[4] < max(arts)){end = max(arts)} else{end = as.numeric(pdbinfo[4])}
 colnames(pdbseq) <- start:end
 
-pdbseq[grep(paste('^',missing,'$', sep=''),colnames(pdbseq))] <- "-"
+
+miss <- paste('^',missing,'$', sep='',collapse="|")
+
+pdbseq[grep(miss,colnames(pdbseq))] <- "-"
 
 
 #read alignment
@@ -66,7 +69,8 @@ for (k in 1:length(seq2gaps)){
 		newseq <- c(newseq,"-")
 	}
 }
-newseq <- c(newseq,as.vector(unlist(pdbseq[(ic+1):length(pdbseq)])))
+
+if(length(pdbseq) >= (ic + 1)){newseq <- c(newseq,as.vector(unlist(pdbseq[(ic+1):length(pdbseq)])))}
 newseq <- t(data.frame(newseq))
 #info for PIR alignment
 first <- pdbinfo[length(pdbinfo)]

@@ -73,7 +73,9 @@ cat "${PDB}" | grep -E 'ATOM {1,8}1 {1,5}[A-Za-z]{1} {1,5}[A-Za-z]{1,5} '${CHAIN
 paste -d' ' PDBSEQ.tab remark465.txted PDBSEQ.first > PDBSEQ.table
 
 
-cat "${PDB}" | grep -E 'SEQRES {1,5}[0-9]{1,2} '${CHAIN}'' | sed -E 's/SEQRES   ?[0-9]{1,2} \w  [0-9]{1,3}  //' | sed -E 's/ {1,50}$//g'| tr '\n' ' ' | sed -e 's/MET/M/g' -e 's/PHE/F/g' -e 's/LEU/L/g' -e 's/ILE/I/g' -e 's/VAL/V/g' -e 's/SER/S/g' -e 's/PRO/P/g' -e 's/THR/T/g' -e 's/ALA/A/g' -e 's/TYR/Y/g' -e 's/HIS/H/g' -e 's/GLN/Q/g' -e 's/ASN/N/g' -e 's/ASP/D/g' -e 's/GLU/E/g' -e 's/CYS/C/g' -e 's/TRP/W/g' -e 's/ARG/R/g' -e 's/LYS/K/g' -e 's/GLY/G/g' -e 's/ $/\n/' > PDBSEQ_"${CHAIN}".seq
+cat "${PDB}" | grep -E 'SEQRES {1,5}[0-9]{1,2} '${CHAIN}'' | sed -E 's/SEQRES   ?[0-9]{1,2} \w  [0-9]{1,3}  //' | sed -E 's/ {1,50}$//g'| tr '\n' ' ' | sed -e 's/MET/M/g' -e 's/PHE/F/g' -e 's/LEU/L/g' -e 's/ILE/I/g' -e 's/VAL/V/g' -e 's/SER/S/g' -e 's/PRO/P/g' -e 's/THR/T/g' -e 's/ALA/A/g' -e 's/TYR/Y/g' -e 's/HIS/H/g' -e 's/GLN/Q/g' -e 's/ASN/N/g' -e 's/ASP/D/g' -e 's/GLU/E/g' -e 's/CYS/C/g' -e 's/TRP/W/g' -e 's/ARG/R/g' -e 's/LYS/K/g' -e 's/GLY/G/g' -e 's/MLZ/-/g' -e 's/ $/\n/' > PDBSEQ_"${CHAIN}".seq
+
+if [[ $(cat "${PDB}" | grep -E 'MODRES {1,5}[0-9a-zA-Z]{4,6} {1,5}[a-zA-Z]{1,5} '${CHAIN}'') ]];then echo "Modified residues found.";  cat "${PDB}" | grep -E 'MODRES {1,5}[0-9a-zA-Z]{4,6} {1,5}[a-zA-Z]{1,5} '${CHAIN}'' > ModifiedRES.txt;fi
 
 
 #Processing fasta alingment
