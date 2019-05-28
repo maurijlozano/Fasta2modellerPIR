@@ -23,6 +23,8 @@ missing <- as.vector(unlist(pdbinfo[8:(length(pdbinfo)-1)]))
 #read seq from pdb
 pdbseq <- read.table(seqpdb, header=FALSE, sep=" ", stringsAsFactors=FALSE, colClasses = c("character"))
 arts <- as.numeric(read.table(artifacts, header=FALSE, sep=" ", stringsAsFactors=FALSE, colClasses = c("character")))
+pdbseq[grep('.{2,5}',pdbseq)] <- "-"
+
 
 if (pdbinfo[3] > min(arts)){start = min(arts)} else{start =as.numeric(pdbinfo[3])}
 if (pdbinfo[4] < max(arts)){end = max(arts)} else{end = as.numeric(pdbinfo[4])}
