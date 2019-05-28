@@ -29,3 +29,6 @@ As an example, for 4n81 alignment with SMc04042, the c terminal residue of 4n81 
 
 ## For domain modelling!
 For domain modelling, the alignment must be of the domains. The script will work fine both, if the pdb has the complete protein sequence under 'SEQREF' or only the domain sequence. Any failure in the script will be related, possibly to abnormal numeration  or missing/ added positions (such as cloning artifacts).
+
+## Modified Residues
+If the protein has modified residues an output file will be created. Modified residues are replaced by gaps for modelling. If you with to model modified residues please refer to Modeller help.
