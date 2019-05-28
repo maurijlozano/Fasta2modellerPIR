@@ -57,11 +57,12 @@ if [[ ${PDB} == 0 ]] ; then
 fi
 
 if [[ ${CHAIN} == 0 ]] ; then
+    CHAIN=A 
     echo 'Using chain A, for other chains selection use -c argument'
 fi
 
 #Extracting missing residues
-cat "${PDB}" | grep -E 'REMARK 465     \w{3} \w     ?' | sed -E 's/REMARK 465     \w{3} \w     ?//' | sed -E 's/ //g' | tr '\n' ' ' | sed -E 's/ $//' > remark465.txted
+cat "${PDB}" | grep -E 'REMARK 465     \w{3} '${CHAIN}'     ?' | sed -E 's/REMARK 465     \w{3} \w     ?//' | sed -E 's/ //g' | tr '\n' ' ' | sed -E 's/ $//' > remark465.txted
 
 
 cat "${PDB}" | grep -E 'DBREF {1,5}[0-9A-Za-z]{1,5} '${CHAIN}'' |  sed -e 's/DBREF//' -e 's/^ *//' -e 's/ *$//' | sed -E 's/ {1,10}/ /g' > PDBSEQ.tab
