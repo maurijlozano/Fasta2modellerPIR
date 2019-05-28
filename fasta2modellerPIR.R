@@ -13,16 +13,23 @@ pdb <- args[1]
 seqpdb <- args[2]
 ali <- args[3]
 seqname <- args[4]
-
+artifacts <- args[5]
 # test if there is at least one argument: if not, return an error
 
 #read talbe 8:length son missing residues
 pdbinfo <- read.table(pdb, header=FALSE, sep=" ", stringsAsFactors=FALSE)
-missing <- as.vector(unlist(pdbinfo[10:length(pdbinfo)]))
+missing <- as.vector(unlist(pdbinfo[8:(length(pdbinfo)-1)]))
 
 #read seq from pdb
 pdbseq <- read.table(seqpdb, header=FALSE, sep=" ", stringsAsFactors=FALSE, colClasses = c("character"))
-pdbseq[missing] <- "-"
+arts <- as.numeric(read.table(artifacts, header=FALSE, sep=" ", stringsAsFactors=FALSE, colClasses = c("character")))
+
+if (pdbinfo[3] > min(arts)){start = min(arts)} else{start =as.numeric(pdbinfo[3])}
+if (pdbinfo[4] < max(arts)){end = max(arts)} else{end = as.numeric(pdbinfo[4])}
+colnames(pdbseq) <- start:end
+
+pdbseq[grep(paste('^',missing,'$', sep=''),colnames(pdbseq))] <- "-"
+
 
 #read alignment
 aliseqs <- read.table(ali, header=FALSE, sep=" ", stringsAsFactors=FALSE, colClasses = c("character"))
@@ -33,6 +40,9 @@ seqname2<-aliseqs[grep(seqname,aliseqs[,1],invert=T),1]
 
 seq1 <- read.fwf(textConnection(aliseqs[grep(seqname,aliseqs[,1]),2]), widths = rep(1, ceiling(max(nchar(aliseqs[1,2]) / 1))), stringsAsFactors = FALSE,colClasses = c("character"))
 seq2 <- read.fwf(textConnection(aliseqs[grep(seqname,aliseqs[,1],invert=T),2]), widths = rep(1, ceiling(max(nchar(aliseqs[2,2]) / 1))), stringsAsFactors = FALSE,colClasses = c("character"))
+
+
+
 
 #Transform alignment
 seq2gaps <- grep('-',seq2)
@@ -59,8 +69,12 @@ for (k in 1:length(seq2gaps)){
 newseq <- c(newseq,as.vector(unlist(pdbseq[(ic+1):length(pdbseq)])))
 newseq <- t(data.frame(newseq))
 #info for PIR alignment
-first <- min(grep('-',newseq,invert=T))
+first <- pdbinfo[length(pdbinfo)]
+#first <- min(grep('-',newseq,invert=T))
 lenstruct <- length(grep('-',newseq,invert=T))
+
+
+
 
 fn<-gsub('.fastab','.PIR',ali)
 #Write sequence

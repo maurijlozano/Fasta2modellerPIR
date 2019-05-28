@@ -16,7 +16,7 @@ echo "
         -c chain
 "
 
-echo -e '\nConverts fasta alignment to a modeller PIR file. Only for One chain which must be specified.\n\n'
+echo -e '\nConverts fasta alignment to modeller PIR file. Only for One chain which must be specified.\n\n'
 
 exit 1
 }
@@ -57,18 +57,21 @@ if [[ ${PDB} == 0 ]] ; then
 fi
 
 if [[ ${CHAIN} == 0 ]] ; then
-    CHAIN=A 
+	CHAIN=A
     echo 'Using chain A, for other chains selection use -c argument'
 fi
 
-#Extracting missing residues
+#Extracting missing residues and other information
 cat "${PDB}" | grep -E 'REMARK 465     \w{3} '${CHAIN}'     ?' | sed -E 's/REMARK 465     \w{3} \w     ?//' | sed -E 's/ //g' | tr '\n' ' ' | sed -E 's/ $//' > remark465.txted
 
+cat "${PDB}" | grep -E 'SEQADV {1,5}[0-9a-zA-Z]{4,6} {1,5}[a-zA-Z]{1,5} '${CHAIN}'' | sed -E 's/SEQADV {1,5}[0-9a-zA-Z]{4,6} {1,5}[a-zA-Z]{1,5} '${CHAIN}' {1,5}([0-9]{1,5}).*/\1/' | tr '\n' ' ' | sed -E 's/ $//' > arts.txt
 
-cat "${PDB}" | grep -E 'DBREF {1,5}[0-9A-Za-z]{1,5} '${CHAIN}'' |  sed -e 's/DBREF//' -e 's/^ *//' -e 's/ *$//' | sed -E 's/ {1,10}/ /g' > PDBSEQ.tab
 
-paste -d' ' PDBSEQ.tab remark465.txted > PDBSEQ.table
-rm PDBSEQ.tab remark465.txted 
+cat "${PDB}" | grep -E 'DBREF {1,5}[0-9A-Za-z]{1,5} '${CHAIN}'' |  sed -e 's/DBREF//' -e 's/^ *//' -e 's/ *$//' -e 's/ $//' |  sed  -E 's/ {1,8}[0-9]{1,5} {1,5}[0-9]{1,5}$//'  | sed -E 's/ {1,10}/ /g' > PDBSEQ.tab
+cat "${PDB}" | grep -E 'ATOM {1,8}1 {1,5}[A-Za-z]{1} {1,5}[A-Za-z]{1,5} '${CHAIN}''|  sed -e 's/\(ATOM\) \{1,8\}1 \{1,5\}[A-Z] \{1,5\}[A-Za-z]\{1,5\} '${CHAIN}' \{1,5\}\([0-9]\{1,4\}\) .*/\2/' > PDBSEQ.first
+
+paste -d' ' PDBSEQ.tab remark465.txted PDBSEQ.first > PDBSEQ.table
+
 
 cat "${PDB}" | grep -E 'SEQRES {1,5}[0-9]{1,2} '${CHAIN}'' | sed -E 's/SEQRES   ?[0-9]{1,2} \w  [0-9]{1,3}  //' | sed -E 's/ {1,50}$//g'| tr '\n' ' ' | sed -e 's/MET/M/g' -e 's/PHE/F/g' -e 's/LEU/L/g' -e 's/ILE/I/g' -e 's/VAL/V/g' -e 's/SER/S/g' -e 's/PRO/P/g' -e 's/THR/T/g' -e 's/ALA/A/g' -e 's/TYR/Y/g' -e 's/HIS/H/g' -e 's/GLN/Q/g' -e 's/ASN/N/g' -e 's/ASP/D/g' -e 's/GLU/E/g' -e 's/CYS/C/g' -e 's/TRP/W/g' -e 's/ARG/R/g' -e 's/LYS/K/g' -e 's/GLY/G/g' -e 's/ $/\n/' > PDBSEQ_"${CHAIN}".seq
 
@@ -77,6 +80,8 @@ cat "${PDB}" | grep -E 'SEQRES {1,5}[0-9]{1,2} '${CHAIN}'' | sed -E 's/SEQRES   
 cat "${ALI}" | perl -pe 'unless(/^>/){s/\n//g}; if(/>/){s/\n/ /g}; s/>/\n/' | sed '/^$/d' > "${ALI}tab"
 
 #Running R script
-Rscript --vanilla fasta2modellerPIR.R PDBSEQ.table PDBSEQ_"${CHAIN}".seq "${ALI}tab" "${SEQ}" &> /dev/null
+Rscript --vanilla fasta2modellerPIR.R PDBSEQ.table PDBSEQ_"${CHAIN}".seq "${ALI}tab" "${SEQ}" arts.txt &> /dev/null
+echo "Cleaning"
+rm PDBSEQ.tab remark465.txted PDBSEQ.first arts.txt PDBSEQ.table ali.fastab PDBSEQ_A.seq
 echo "Done"
 
