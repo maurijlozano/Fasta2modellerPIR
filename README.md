@@ -32,3 +32,6 @@ For domain modelling, the alignment must be of the domains. The script will work
 
 ## Modified Residues
 If the protein has modified residues an output file will be created. Modified residues are replaced by gaps for modelling. If you with to model modified residues please refer to Modeller help.
+
+## Expression TAGs
+If the crystallized protein contains an expression tag, please verify that the sequence used for the alignment doesn't have the tag residues, since  N-ter and C-ter expression tags will be removed.
