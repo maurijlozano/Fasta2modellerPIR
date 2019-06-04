@@ -7,12 +7,12 @@ For usage run:
 ```
 ./fasta2modellerPIR.sh -h
 
-        Usage:fasta2modellerPIR.sh [-a] [-p] [-c] [-s]
+        Usage:fasta2modellerPIR.sh -a alignment -p structure.pdb -c chain -s sequence ID
         
         -h Show this Help
         -a fasta alignment file
         -p PDB file
-        -s Sequence iD
+        -s Sequence ID
         -c chain
 
 
