@@ -56,33 +56,51 @@ newseq<-NULL
 #seq2 indexes
 pa<-1 #last position
 
-for (k in 1:length(seq2gaps)){
-	ngaps <- k-1
-	#seq2 indexes
-	i <- seq2gaps[k] - 1 #the position before the gap on seq2
-	if(seq2[i]!="-"){
-		#pdbseq indexes
-		ic <- i-ngaps #possition before the gap in pdbseq
-		pac <- pa # pa-ngaps-ncg
-		newseq <- c(newseq,as.vector(unlist(pdbseq[pac:ic])),"-")
-		ncg <- 0
-		pa<-ic+1 #last position after adding the gap on seq2
-	} else {
-		newseq <- c(newseq,"-")
+if(length(seq2gaps) > 0){
+	for (k in 1:length(seq2gaps)){
+		ngaps <- k-1
+		#seq2 indexes
+		i <- seq2gaps[k] - 1 #the position before the gap on seq2
+		if(seq2[i]!="-"){
+			#pdbseq indexes
+			ic <- i-ngaps #possition before the gap in pdbseq
+			pac <- pa # pa-ngaps-ncg
+			newseq <- c(newseq,as.vector(unlist(pdbseq[pac:ic])),"-")
+			ncg <- 0
+			pa<-ic+1 #last position after adding the gap on seq2
+		} else {
+			newseq <- c(newseq,"-")
+		}
 	}
-}
 
 if(length(pdbseq) >= (ic + 1)){newseq <- c(newseq,as.vector(unlist(pdbseq[(ic+1):length(pdbseq)])))}
 newseq <- t(data.frame(newseq))
+} else {newseq <- pdbseq}
+
+
 #info for PIR alignment
 first <- pdbinfo[length(pdbinfo)]
 #first <- min(grep('-',newseq,invert=T))
 lenstruct <- length(grep('-',newseq,invert=T))
 
+if (length(newseq) != length(seq1)){
+	startP <- as.numeric(as.character(pdbinfo[3]))
+	startp <- newseq[which(colnames(newseq) == startP)]
+	startN <- which(colnames(newseq) == startP)
+	first <- startP
+	ali2 <- rbind(seq1,seq2)
+	index <- min(which(ali2[2,] == startp[1,1]))
+	newseq <- newseq[1,startN:length(newseq)]
+	lenstruct <- length(grep('-',newseq,invert=T))	
+	seq1 <- seq1[1,index:length(seq1)]
+	if (length(newseq) != length(seq1)){
+		print("Please verify that the alignment inlcudes all the amino acids on the template.")
+		stop()
+	}
+}
 
 
-
-fn<-gsub('.fastab','.PIR',ali)
+fn<-gsub('\\..*$','.PIR',ali)
 #Write sequence
 write.table(paste('c; Converted with Fasta2modelerPIR, by M.J.Lozano'), fn, row.names = F, col.names = F,append=F,quote=F)
 write.table(paste('>P1;',seqname1,sep=''), fn, row.names = F, col.names = F,append=T,quote=F)
@@ -90,8 +108,8 @@ write.table(paste('sequence:',seqname1,':     : :     : ::: 0.00: 0.00',sep=''),
 write.table(cbind(seq1[1,],"*"), fn, row.names = F, sep='', col.names = F,append=T,quote=F)
 
 #Write structure
-write.table(paste('>P1;',seqname2,"A",sep=''), fn, row.names = F, col.names = F,append=T,quote=F)
-write.table(paste('structureX:',seqname2,'.pdb:',first,'  :A:+',lenstruct,' :A:',pdbinfo[7],':: 0.00: 0.00',sep=''), fn, row.names = F, col.names = F,append=T,quote=F)
+write.table(paste('>P1;',seqname2,sep=''), fn, row.names = F, col.names = F,append=T,quote=F)
+write.table(paste('structureX:',seqname2,':',first,'  :A:+',lenstruct,' :A:',pdbinfo[7],':: 0.00: 0.00',sep=''), fn, row.names = F, col.names = F,append=T,quote=F)
 write.table(cbind(newseq,"*"), fn, row.names = F, sep='', col.names = F,append=T,quote=F)
 
 

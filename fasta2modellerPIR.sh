@@ -7,12 +7,12 @@ SEQ=""
 show_help()
 {
 echo "
-        Usage: fasta2modellerPIR.sh [-a] [-p] [-c] [-s]
+        Usage: fasta2modellerPIR.sh -a alignment_file -p pdb_file -c protein_chain -s sequence_name
         
         -h Show this Help
         -a fasta alignment file
         -p PDB file
-        -s Sequence iD
+        -s Sequence iD as in the fasta file.
         -c chain
 "
 
@@ -61,14 +61,20 @@ if [[ ${CHAIN} == 0 ]] ; then
     echo 'Using chain A, for other chains selection use -c argument'
 fi
 
-#Extracting missing residues and other information
-cat "${PDB}" | grep -E 'REMARK 465     \w{3} '${CHAIN}'     ?' | sed -E 's/REMARK 465     \w{3} \w     ?//' | sed -E 's/ //g' | tr '\n' ' ' | sed -E 's/ $//' > remark465.txted
+if [[ ${SEQ} == "" ]] ; then
+	echo 'Parameters -s, sequence name required.'
+    exit 1
+fi
 
-cat "${PDB}" | grep -E 'SEQADV {1,5}[0-9a-zA-Z]{4,6} {1,5}[a-zA-Z]{1,5} '${CHAIN}'' | sed -E 's/SEQADV {1,5}[0-9a-zA-Z]{4,6} {1,5}[a-zA-Z]{1,5} '${CHAIN}' {1,5}([0-9]{1,5}).*/\1/' | tr '\n' ' ' | sed -E 's/ $//' > arts.txt
+SEQ=$(echo "${SEQ}" | sed -E 's/([^ ]*) .*/\1/')
+#Extracting missing residues and other information
+cat "${PDB}" | grep -E 'REMARK 465     \w{3} '${CHAIN}' {3,5}' | sed -E 's/REMARK 465     \w{3} \w {3,5}//' | sed -E 's/ //g' | tr '\n' ' ' | sed -E 's/ $//' > remark465.txted
+
+cat "${PDB}" | grep -E 'SEQADV {1,5}[0-9a-zA-Z]{4,6} {1,5}[a-zA-Z]{1,5} '${CHAIN}'' | sed -E 's/SEQADV {1,5}[0-9a-zA-Z]{4,6} {1,5}[a-zA-Z]{1,5} '${CHAIN}' {1,5}(-?[0-9]{1,5}).*/\1/' | tr '\n' ' ' | sed -E 's/ $//' > arts.txt
 
 
 cat "${PDB}" | grep -E 'DBREF {1,5}[0-9A-Za-z]{1,5} '${CHAIN}'' |  sed -e 's/DBREF//' -e 's/^ *//' -e 's/ *$//' -e 's/ $//' |  sed  -E 's/ {1,8}[0-9]{1,5} {1,5}[0-9]{1,5}$//'  | sed -E 's/ {1,10}/ /g' > PDBSEQ.tab
-cat "${PDB}" | grep -E 'ATOM {1,8}1 {1,5}[A-Za-z]{1} {1,5}[A-Za-z]{1,5} '${CHAIN}''|  sed -e 's/\(ATOM\) \{1,8\}1 \{1,5\}[A-Z] \{1,5\}[A-Za-z]\{1,5\} '${CHAIN}' \{1,5\}\([0-9]\{1,4\}\) .*/\2/' > PDBSEQ.first
+cat "${PDB}" | grep -E 'ATOM {1,8}1 {1,5}[A-Za-z]{1} {1,5}[A-Za-z]{1,5} '${CHAIN}''|  sed -E 's/(ATOM) {1,8}1 {1,5}[A-Z] {1,5}[A-Za-z]{1,5} '${CHAIN}' {1,5}(-?[0-9]{1,4}) .*/\2/' > PDBSEQ.first
 
 paste -d' ' PDBSEQ.tab remark465.txted PDBSEQ.first > PDBSEQ.table
 
@@ -79,11 +85,11 @@ if [[ $(cat "${PDB}" | grep -E 'MODRES {1,5}[0-9a-zA-Z]{4,6} {1,5}[a-zA-Z]{1,5} 
 
 
 #Processing fasta alingment
-cat "${ALI}" | perl -pe 'unless(/^>/){s/\n//g}; if(/>/){s/\n/ /g}; s/>/\n/' | sed '/^$/d' > "${ALI}tab"
+cat "${ALI}" | perl -pe 'unless(/^>/){s/ //g;s/\n//g;s/\r//g}; if(/>/){s/([^ ]*) .*/$1/;s/\n/ /g;s/\r//g; s/>/\n/}' | sed '/^$/d' > "${ALI}tab"
 
 #Running R script
-Rscript --vanilla fasta2modellerPIR.R PDBSEQ.table PDBSEQ_"${CHAIN}".seq "${ALI}tab" "${SEQ}" arts.txt &> /dev/null
+Rscript --vanilla fasta2modellerPIR.R PDBSEQ.table PDBSEQ_"${CHAIN}".seq "${ALI}tab" "${SEQ}" arts.txt 2> /dev/null
 echo "Cleaning"
-rm PDBSEQ.tab remark465.txted PDBSEQ.first arts.txt PDBSEQ.table ali.fastab PDBSEQ_A.seq
+rm PDBSEQ.tab remark465.txted PDBSEQ.first arts.txt PDBSEQ.table "${ALI}tab" PDBSEQ_A.seq
 echo "Done"
 
